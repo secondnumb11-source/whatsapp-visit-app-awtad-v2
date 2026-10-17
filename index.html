@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#128c7e">
+<title>نموذج بيانات الزيارة</title>
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root{--g:#128c7e;--g2:#075e54;--bg:#f3f6f5;--card:#fff;--line:#d9e1df;--text:#17201e;--muted:#68736f}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Tahoma,Arial,sans-serif;line-height:1.7}
+.app{max-width:1050px;margin:auto;padding:12px}.head{background:linear-gradient(135deg,var(--g2),var(--g));color:#fff;border-radius:18px;padding:18px 20px;margin-bottom:14px}.head h1{margin:0 0 3px;font-size:23px}.head p{margin:0;font-size:13px;opacity:.92}
+.tabs{display:flex;gap:7px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:6px;margin-bottom:14px;position:sticky;top:4px;z-index:5}.tab{flex:1;border:0;background:transparent;color:var(--muted);font:800 15px Tahoma,Arial;padding:10px;border-radius:10px;cursor:pointer}.tab.active{background:var(--g);color:#fff}
+.panel{display:none}.panel.active{display:block}.grid{display:grid;grid-template-columns:360px 1fr;gap:14px;align-items:start}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 5px 18px #00000009}.card h2{font-size:18px;margin:0 0 12px}
+.fixed{background:#f5f8f7;border-radius:10px;padding:9px 11px;font-size:13px;margin-bottom:12px}.field{margin:0 0 11px}label{display:block;font-weight:700;font-size:13px;margin-bottom:4px}input{width:100%;padding:10px 11px;border:1px solid #cbd5d2;border-radius:9px;font-size:16px;outline:0;background:#fff}input:focus{border-color:var(--g);box-shadow:0 0 0 3px #128c7e18}
+.visitor{border:1px dashed #b8c8c4;border-radius:12px;padding:11px;margin-bottom:9px;background:#fbfdfc;position:relative}.visitor-title{font-weight:800;margin-bottom:7px}.remove{position:absolute;left:9px;top:9px;border:0;background:#fff0f0;color:#b42318;border-radius:8px;padding:4px 8px;cursor:pointer;font-family:inherit}
+.btn{border:0;border-radius:10px;padding:10px 13px;font:800 14px Tahoma,Arial;cursor:pointer}.add{background:#e7f5f2;color:var(--g2);width:100%;margin:1px 0 11px}.copy{background:var(--g);color:#fff;width:100%;font-size:17px}.secondary{background:#eef4f2;color:var(--g2)}.danger{background:#fff0f0;color:#b42318}
+.preview{position:sticky;top:58px}.preview-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}.badge{font-size:11px;background:#e7f5f2;color:var(--g2);padding:3px 7px;border-radius:999px}.message{direction:rtl;text-align:right;white-space:pre-wrap;unicode-bidi:plaintext;background:#e8f5e9;border-radius:12px;padding:18px;min-height:510px;font:15px/1.65 Tahoma,Arial,sans-serif;border:1px solid #cfe2d2}.success{text-align:center;color:var(--g2);font-weight:800;margin-top:7px;display:none}.note,.muted{font-size:12px;color:var(--muted);margin-top:8px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:12px}.stat{background:#f5f8f7;border:1px solid var(--line);border-radius:11px;padding:10px}.stat b{display:block;font-size:21px;color:var(--g2)}.stat span{font-size:11px;color:var(--muted)}
+.toolbar{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:9px;align-items:end;margin-bottom:12px}.actions{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0 12px}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:11px}table{width:100%;border-collapse:collapse;min-width:820px;background:#fff}th,td{padding:8px;border-bottom:1px solid #e8eeec;text-align:right;vertical-align:top;font-size:12px}th{background:#f5f8f7;font-weight:800}tr:last-child td{border-bottom:0}.empty{padding:25px;text-align:center;color:var(--muted)}
+.modal-bg{display:none;position:fixed;inset:0;background:#0007;z-index:30;padding:15px;overflow:auto}.modal{max-width:850px;margin:25px auto;background:#fff;border-radius:15px;padding:15px}.modal-head{display:flex;justify-content:space-between;align-items:center}.modal-msg{white-space:pre-wrap;direction:rtl;text-align:right;background:#f5f8f7;border-radius:10px;padding:14px;font:14px/1.7 Tahoma,Arial;overflow:auto}.close{border:0;background:#eee;border-radius:8px;padding:7px 11px;cursor:pointer;font-family:inherit}
+@media(max-width:800px){.app{padding:9px}.grid{grid-template-columns:1fr}.preview{position:static}.toolbar{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}}@media(max-width:480px){.stats{grid-template-columns:1fr}.tab{font-size:13px;padding:9px 5px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="head"><h1>📋 مولّد نموذج بيانات الزيارة</h1><p>أدخل البيانات المتغيرة فقط، ثم اضغط «نسخ الرسالة» والصقها مباشرة في مجموعة الواتساب.</p></header>
+<nav class="tabs"><button id="tCreate" class="tab active" onclick="switchTab('create')">✍️ إنشاء الرسالة</button><button id="tReports" class="tab" onclick="switchTab('reports')">📊 السجل والتقارير</button></nav>
+
+<section id="create" class="panel active"><div class="grid">
+<div class="card">
+<h2>بيانات الزيارة</h2>
+<div class="fixed"><b>البيانات الثابتة:</b><br>🏢 الشركة: أوتاد الفهد<br>📍 موقع الزيارة: بوليفارد - أوزبكستان<br>📝 سبب الزيارة: زيارة عمل<br>👨‍💼 المسؤول المعتمد: طارق دمرية<br>🏢 المسمى الوظيفي: مدير إدارة المرافق</div>
+<div id="visitors"></div><button class="btn add" onclick="addVisitor()">＋ إضافة زائر</button>
+<div class="field"><label>📅 تاريخ الزيارة</label><input id="date" inputmode="numeric" placeholder="مثال: 06/10/2026"></div>
+<div class="field"><label>🕐 وقت الزيارة</label><input id="time" inputmode="numeric" placeholder="مثال: 10:30"></div>
+<div class="field"><label>🚘 رقم لوحة السيارة</label><input id="plate" placeholder="أدخل رقم اللوحة"></div>
+<div class="field"><label>📝 الملاحظات (تظهر أسفل رقم اللوحة)</label><input id="notes" placeholder="اتركها فارغة إذا لم توجد ملاحظات"></div>
+<button class="btn copy" onclick="copyMessage()">📋 نسخ الرسالة</button><div id="success" class="success">✓ تم نسخ الرسالة — الصقها الآن في الواتساب</div>
+<div class="note">الأرقام تُحوّل تلقائيًا إلى الإنجليزية. التاريخ والوقت واللوحة والملاحظات تُحفظ تلقائيًا على هذا الجهاز.</div>
+</div>
+<div class="card preview"><div class="preview-title"><h2 style="margin:0">معاينة الرسالة</h2><span class="badge">جاهزة للواتساب</span></div><div id="preview" class="message"></div></div>
+</div></section>
+
+<section id="reports" class="panel"><div class="card">
+<h2>📊 السجل والتقارير</h2><div class="muted">يتم تسجيل الرسالة عند الضغط على «نسخ الرسالة». هذا يثبت النسخ من التطبيق فقط، ولا يثبت الإرسال الفعلي في واتساب.</div>
+<div class="stats"><div class="stat"><b id="total">0</b><span>إجمالي الرسائل</span></div><div class="stat"><b id="today">0</b><span>رسائل اليوم</span></div><div class="stat"><b id="visitorTotal">0</b><span>إجمالي الزوار</span></div></div>
+<div class="toolbar">
+<div class="field"><label>🔎 بحث بالاسم أو رقم الهوية</label><input id="q" oninput="renderReports()" placeholder="اكتب الاسم أو الهوية"></div>
+<div class="field"><label>📅 تاريخ الزيارة</label><input id="vd" inputmode="numeric" oninput="digits(this);renderReports()" placeholder="06/10/2026"></div>
+<div class="field"><label>من تاريخ التسجيل</label><input id="from" type="date" onchange="renderReports()"></div>
+<div class="field"><label>إلى تاريخ التسجيل</label><input id="to" type="date" onchange="renderReports()"></div>
+</div>
+<div class="actions"><button class="btn secondary" onclick="clearFilters()">مسح الفلاتر</button><button class="btn secondary" onclick="exportCSV()">تصدير CSV</button><button class="btn secondary" onclick="printReport()">طباعة</button><button class="btn danger" onclick="clearAll()">حذف كل السجلات</button></div>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>التسجيل</th><th>الزيارة</th><th>الوقت</th><th>الزوار والهويات</th><th>اللوحة</th><th>الملاحظات</th><th></th></tr></thead><tbody id="rows"></tbody></table><div id="empty" class="empty">لا توجد سجلات مطابقة.</div></div>
+<h3>عدد الرسائل المسجلة يوميًا</h3><div class="table-wrap"><table><thead><tr><th>اليوم</th><th>العدد</th></tr></thead><tbody id="days"></tbody></table></div>
+</div></section>
+</div>
+<div id="modalBg" class="modal-bg" onclick="if(event.target===this)closeModal()"><div class="modal"><div class="modal-head"><h2>📄 نص الرسالة المسجلة</h2><button class="close" onclick="closeModal()">إغلاق</button></div><div id="modalMsg" class="modal-msg"></div></div></div>
+
+<script>
+const enDigits=s=>String(s||'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+const LRM='\u200E'; const LRI='\u2066'; const PDI='\u2069'; const DB='visit_messages_db_v1', STORE='messages', KEY='visit_form_persistent_v1';
+let count=0,records=[];
+
+function digits(el){el.value=enDigits(el.value);update();}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
+function iso(v){v=enDigits(v).trim();return v?LRM+v+LRM:'__________'}
+function ar(v){v=String(v||'').trim();return v||'__________'}
+function line(e,label,value,boldLabel=false){
+ // اعزل عنوان الحقل (بما فيه رقم التسلسل) كوحدة RTL، ثم ثبّت النقطتين باتجاه RTL.
+ // هذا يمنع خوارزمية bidi من نقل الرقم إلى الجهة الأخرى من النقطتين.
+ return '\u202B'+e+' *'+label+' :*'+'\u200F'+' '+value+'\u202C';
+}
+function message(){
+ const out=[];
+ out.push('\u202B📋 *نموذج بيانات الزيارة*\u202C');
+ out.push('\u202B🏢 *الشركة* : أوتاد الفهد\u202C');
+ out.push('');
+ const vs=[...document.querySelectorAll('.visitor')];
+ vs.forEach((v,i)=>{
+  out.push(line('👤','اسم الزائر '+(i+1),ar(v.querySelector('.vname').value),true));
+  out.push(line('🪪','رقم الهوية '+(i+1),iso(v.querySelector('.vid').value),true));
+  if(i<vs.length-1) out.push('');
+ });
+ out.push('');
+ out.push(line('📅','تاريخ الزيارة',iso(document.getElementById('date').value),true));
+ out.push(line('🕐','وقت الزيارة',iso(document.getElementById('time').value),true));
+ out.push(line('📍','موقع الزيارة','بوليفارد - أوزبكستان',true));
+ out.push(line('📝','سبب الزيارة','زيارة عمل',true));
+ out.push('');
+ out.push(line('🚘','رقم لوحة السيارة',iso(document.getElementById('plate').value),true));
+ const n=document.getElementById('notes').value.trim();
+ if(n) out.push('\u202B'+n+'\u202C');
+ out.push('','','\u202B________________________\u202C','',
+  '\u202B✅ *الاعتماد*\u202C','',
+  line('👨‍💼','المسؤول المعتمد','طارق دمرية'),
+  line('🏢','المسمى الوظيفي','مدير إدارة المرافق'));
+ return out.join('\n');
+}
+function update(){
+ const raw=message();
+ const escaped=raw.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ document.getElementById('preview').innerHTML=escaped.replace(/\*([^*\n]+)\*/g,'<strong>$1</strong>');
+}
+function openDB(){return new Promise((res,rej)=>{let r=indexedDB.open(DB,1);r.onupgradeneeded=()=>r.result.createObjectStore(STORE,{keyPath:'id',autoIncrement:true});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+async function saveRecord(msg){let vs=[...document.querySelectorAll('.visitor')].map((v,i)=>({number:i+1,name:v.querySelector('.vname').value.trim(),id:enDigits(v.querySelector('.vid').value).trim()}));let r={copiedAt:new Date().toISOString(),visitDate:enDigits(date.value).trim(),visitTime:enDigits(time.value).trim(),plate:enDigits(plate.value).trim(),notes:notes.value.trim(),visitors:vs,message:msg};let db=await openDB();await new Promise((res,rej)=>{let t=db.transaction(STORE,'readwrite');t.objectStore(STORE).add(r);t.oncomplete=res;t.onerror=()=>rej(t.error)})}
+async function all(){let db=await openDB();return new Promise((res,rej)=>{let t=db.transaction(STORE,'readonly'),r=t.objectStore(STORE).getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>rej(r.error)})}
+async function copyMessage(){let msg=message(),ok=false;try{await navigator.clipboard.writeText(msg);ok=true}catch(e){let t=document.createElement('textarea');t.value=msg;t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.select();ok=document.execCommand('copy');t.remove()}if(ok){await saveRecord(msg);document.getElementById('success').style.display='block';setTimeout(()=>success.style.display='none',2200)}else alert('تعذر النسخ. اسمح للمتصفح بالوصول إلى الحافظة ثم حاول مرة أخرى.')}
+function switchTab(x){create.classList.toggle('active',x==='create');reports.classList.toggle('active',x==='reports');tCreate.classList.toggle('active',x==='create');tReports.classList.toggle('active',x==='reports');if(x==='reports')renderReports();scrollTo({top:0,behavior:'smooth'})}
+function key(iso){return new Date(iso).toLocaleDateString('en-CA')}
+function copied(iso){let d=new Date(iso);return d.toLocaleDateString('en-GB')+' '+d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}
+function filtered(){let s=q.value.trim().toLowerCase(),v=vd.value.trim(),f=from.value,t=to.value;return records.filter(r=>(!s||r.visitors.some(x=>x.name.toLowerCase().includes(s)||x.id.includes(s)))&&(!v||r.visitDate===v)&&(!f||key(r.copiedAt)>=f)&&(!t||key(r.copiedAt)<=t))}
+async function renderReports(){try{records=await all()}catch(e){return}records.sort((a,b)=>new Date(b.copiedAt)-new Date(a.copiedAt));let rs=filtered();total.textContent=records.length;today.textContent=records.filter(r=>key(r.copiedAt)===key(new Date().toISOString())).length;visitorTotal.textContent=records.reduce((n,r)=>n+r.visitors.length,0);empty.style.display=rs.length?'none':'block';rows.innerHTML=rs.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(copied(r.copiedAt))+'</td><td>'+esc(r.visitDate||'—')+'</td><td>'+esc(r.visitTime||'—')+'</td><td>'+r.visitors.map(x=>esc(x.number+'. '+(x.name||'—'))+'<br><small>'+esc(x.id||'—')+'</small>').join('<hr style="border:0;border-top:1px solid #eee">')+'</td><td>'+esc(r.plate||'—')+'</td><td>'+esc(r.notes||'—')+'</td><td><button class="btn secondary" onclick="showRecord('+r.id+')">عرض</button></td></tr>').join('');let c={};rs.forEach(r=>c[key(r.copiedAt)]=(c[key(r.copiedAt)]||0)+1);days.innerHTML=Object.keys(c).sort().reverse().map(d=>'<tr><td>'+d+'</td><td><b>'+c[d]+'</b></td></tr>').join('')}
+function clearFilters(){q.value=vd.value=from.value=to.value='';renderReports()}
+async function clearAll(){if(!confirm('سيتم حذف جميع السجلات من هذا الجهاز. هل أنت متأكد؟'))return;let db=await openDB();await new Promise((res,rej)=>{let t=db.transaction(STORE,'readwrite');t.objectStore(STORE).clear();t.oncomplete=res;t.onerror=()=>rej(t.error)});renderReports()}
+function showRecord(id){let r=records.find(x=>x.id===id);if(r){modalMsg.textContent=r.message;modalBg.style.display='block'}}
+function closeModal(){modalBg.style.display='none'}
+function csv(v){return '"'+String(v??'').replace(/"/g,'""')+'"'}
+function exportCSV(){let rs=filtered(),a=[['رقم السجل','تاريخ/وقت التسجيل','تاريخ الزيارة','وقت الزيارة','الزوار','الهويات','اللوحة','الملاحظات'].map(csv).join(',')];rs.forEach(r=>a.push([r.id,copied(r.copiedAt),r.visitDate,r.visitTime,r.visitors.map(x=>x.name).join(' | '),r.visitors.map(x=>x.id).join(' | '),r.plate,r.notes].map(csv).join(',')));let u=URL.createObjectURL(new Blob(['\uFEFF'+a.join('\r\n')],{type:'text/csv;charset=utf-8'}));let a1=document.createElement('a');a1.href=u;a1.download='تقرير_رسائل_الزيارة.csv';a1.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+function printReport(){let rs=filtered(),w=open('','_blank');if(!w){alert('اسمح بالنوافذ المنبثقة للطباعة.');return}w.document.write('<html lang="ar" dir="rtl"><meta charset="utf-8"><title>تقرير رسائل الزيارة</title><style>body{font-family:Tahoma,Arial;padding:20px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:7px;text-align:right;vertical-align:top}th{background:#eee}</style><h1>تقرير رسائل الزيارة</h1><p>إجمالي السجلات: '+rs.length+'</p><table><tr><th>#</th><th>التسجيل</th><th>الزيارة</th><th>الوقت</th><th>الزوار والهويات</th><th>اللوحة</th><th>الملاحظات</th></tr>'+rs.map((r,i)=>'<tr><td>'+i+'</td><td>'+esc(copied(r.copiedAt))+'</td><td>'+esc(r.visitDate)+'</td><td>'+esc(r.visitTime)+'</td><td>'+r.visitors.map(x=>esc(x.number+'. '+x.name)+' ('+esc(x.id)+')').join('<br>')+'</td><td>'+esc(r.plate)+'</td><td>'+esc(r.notes)+'</td></tr>').join('')+'</table><script>print()<\\/script></html>');w.document.close()}
+function persist(){localStorage.setItem(KEY,JSON.stringify({date:date.value,time:time.value,plate:plate.value,notes:notes.value}))}
+function loadPersist(){try{let x=JSON.parse(localStorage.getItem(KEY)||'{}');if(x.date!==undefined)date.value=x.date;if(x.time!==undefined)time.value=x.time;if(x.plate!==undefined)plate.value=x.plate;if(x.notes!==undefined)notes.value=x.notes}catch(e){}}
+['date','time','plate','notes'].forEach(id=>document.getElementById(id).oninput=function(){if(id!=='notes')digits(this);persist();update()});
+addVisitor();addVisitor();loadPersist();update();openDB().catch(()=>{});
+if('serviceWorker' in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body></html>
