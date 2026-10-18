@@ -25,7 +25,7 @@
 <body>
 <div class="app">
 <header class="head"><h1>📋 مولّد نموذج بيانات الزيارة</h1><p>أدخل البيانات المتغيرة فقط، ثم اضغط «نسخ الرسالة» والصقها مباشرة في مجموعة الواتساب.</p></header>
-<nav class="tabs"><button id="tCreate" class="tab active" onclick="switchTab('create')">✍️ إنشاء الرسالة</button><button id="tReports" class="tab" onclick="switchTab('reports')">📊 السجل والتقارير</button></nav>
+<nav class="tabs"><button id="tCreate" class="tab active" onclick="switchTab('create')">✍️ نموذج تصريح الزيارة</button><button id="tExit" class="tab" onclick="switchTab('exit')">🚚 نموذج طلب تصريح خروج</button><button id="tReports" class="tab" onclick="switchTab('reports')">📊 السجل والتقارير</button></nav>
 
 <section id="create" class="panel active"><div class="grid">
 <div class="card">
@@ -46,6 +46,24 @@
 <div class="note">الأرقام تُحوّل تلقائيًا إلى الإنجليزية. التاريخ والوقت واللوحة والملاحظات تُحفظ تلقائيًا على هذا الجهاز.</div>
 </div>
 <div class="card preview"><div class="preview-title"><h2 style="margin:0">معاينة الرسالة</h2><span class="badge">جاهزة للواتساب</span></div><div id="preview" class="message"></div></div>
+</div></section>
+
+<section id="exit" class="panel"><div class="grid">
+<div class="card"><h2>🚚 نموذج طلب تصريح خروج</h2>
+<div class="fixed"><b>جميع البيانات تحفظ تلقائيًا على هذا الجهاز، ولا تتغير عند إنشاء رسالة جديدة إلا بتعديلها يدويًا.</b></div>
+<div class="field"><label>🏢 الشركة</label><input id="exitCompany" placeholder="اسم الشركة"></div>
+<div class="field"><label>👤 الاسم</label><input id="exitName" placeholder="اسم الزائر"></div>
+<div class="field"><label>🪪 رقم الهوية</label><input id="exitId" inputmode="numeric" placeholder="رقم الهوية"></div>
+<div class="field"><label>📅 تاريخ الخروج</label><input id="exitDate" inputmode="numeric" placeholder="مثال: 18/10/2026"></div>
+<div class="field"><label>🕐 وقت الخروج</label><input id="exitTime" inputmode="numeric" placeholder="مثال: 02:30"></div>
+<div class="field"><label>📍 موقع الخروج</label><input id="exitLocation" placeholder="موقع الخروج"></div>
+<div class="field"><label>📝 نوع الحمولة</label><input id="exitCargo" placeholder="نوع الحمولة"></div>
+<div class="field"><label>🚘 رقم لوحة السيارة</label><input id="exitPlate" placeholder="رقم اللوحة"></div>
+<div class="field"><label>👨‍💼 المسؤول المعتمد</label><input id="exitApprover" placeholder="اسم المسؤول المعتمد"></div>
+<div class="field"><label>🏢 المسمى الوظيفي</label><input id="exitJobTitle" placeholder="المسمى الوظيفي"></div>
+<button class="btn copy" onclick="copyExitMessage()">📋 نسخ تصريح الخروج</button><div id="exitSuccess" class="success">✓ تم نسخ تصريح الخروج — الصقه في الواتساب</div>
+<div class="note">يمكنك تعديل أي قيمة يدويًا، وستظل محفوظة للمرات التالية.</div></div>
+<div class="card preview"><div class="preview-title"><h2 style="margin:0">معاينة تصريح الخروج</h2><span class="badge">جاهز للواتساب</span></div><div id="exitPreview" class="message"></div></div>
 </div></section>
 
 <section id="reports" class="panel"><div class="card">
@@ -113,7 +131,7 @@ function openDB(){return new Promise((res,rej)=>{let r=indexedDB.open(DB,1);r.on
 async function saveRecord(msg){let vs=[...document.querySelectorAll('.visitor')].map((v,i)=>({number:i+1,name:v.querySelector('.vname').value.trim(),id:enDigits(v.querySelector('.vid').value).trim()}));let r={copiedAt:new Date().toISOString(),visitDate:enDigits(date.value).trim(),visitTime:enDigits(time.value).trim(),plate:enDigits(plate.value).trim(),notes:notes.value.trim(),visitors:vs,message:msg};let db=await openDB();await new Promise((res,rej)=>{let t=db.transaction(STORE,'readwrite');t.objectStore(STORE).add(r);t.oncomplete=res;t.onerror=()=>rej(t.error)})}
 async function all(){let db=await openDB();return new Promise((res,rej)=>{let t=db.transaction(STORE,'readonly'),r=t.objectStore(STORE).getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>rej(r.error)})}
 async function copyMessage(){let msg=message(),ok=false;try{await navigator.clipboard.writeText(msg);ok=true}catch(e){let t=document.createElement('textarea');t.value=msg;t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.select();ok=document.execCommand('copy');t.remove()}if(ok){await saveRecord(msg);document.getElementById('success').style.display='block';setTimeout(()=>success.style.display='none',2200)}else alert('تعذر النسخ. اسمح للمتصفح بالوصول إلى الحافظة ثم حاول مرة أخرى.')}
-function switchTab(x){create.classList.toggle('active',x==='create');reports.classList.toggle('active',x==='reports');tCreate.classList.toggle('active',x==='create');tReports.classList.toggle('active',x==='reports');if(x==='reports')renderReports();scrollTo({top:0,behavior:'smooth'})}
+function switchTab(x){['create','exit','reports'].forEach(id=>document.getElementById(id).classList.toggle('active',x===id));['tCreate','tExit','tReports'].forEach(id=>document.getElementById(id).classList.toggle('active',id==='t'+x.charAt(0).toUpperCase()+x.slice(1)));if(x==='reports')renderReports();scrollTo({top:0,behavior:'smooth'})}
 function key(iso){return new Date(iso).toLocaleDateString('en-CA')}
 function copied(iso){let d=new Date(iso);return d.toLocaleDateString('en-GB')+' '+d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}
 function filtered(){let s=q.value.trim().toLowerCase(),v=vd.value.trim(),f=from.value,t=to.value;return records.filter(r=>(!s||r.visitors.some(x=>x.name.toLowerCase().includes(s)||x.id.includes(s)))&&(!v||r.visitDate===v)&&(!f||key(r.copiedAt)>=f)&&(!t||key(r.copiedAt)<=t))}
@@ -130,7 +148,15 @@ function renumberVisitors(){document.querySelectorAll('.visitor').forEach((v,i)=
 function persist(){const visitors=[...document.querySelectorAll('.visitor')].map(v=>({name:v.querySelector('.vname').value,id:v.querySelector('.vid').value}));localStorage.setItem(KEY,JSON.stringify({company:company.value,location:location.value,reason:reason.value,approver:approver.value,jobTitle:jobTitle.value,date:date.value,time:time.value,plate:plate.value,notes:notes.value,visitors}))}
 function loadPersist(){try{let x=JSON.parse(localStorage.getItem(KEY)||'{}');['company','location','reason','approver','jobTitle','date','time','plate','notes'].forEach(id=>{if(x[id]!==undefined)document.getElementById(id).value=x[id]});if(Array.isArray(x.visitors)&&x.visitors.length){document.getElementById('visitors').innerHTML='';x.visitors.forEach(v=>addVisitor(v))}}catch(e){}}
 ['company','location','reason','approver','jobTitle','date','time','plate','notes'].forEach(id=>document.getElementById(id).addEventListener('input',function(){if(['date','time','plate'].includes(id))digits(this);persist();update()}));
-loadPersist();if(!document.querySelector('.visitor')){addVisitor();addVisitor()}update();openDB().catch(()=>{});
+const EXIT_KEY='visit_exit_form_persistent_v1';
+const exitIds=['exitCompany','exitName','exitId','exitDate','exitTime','exitLocation','exitCargo','exitPlate','exitApprover','exitJobTitle'];
+function exitMessage(){const g=id=>ar(document.getElementById(id).value);const out=['\u202B📋 *نموذج بيانات تصريح خروج من احد المواقع في البوليفارد*\u202C','', '\u202B🏢 *الشركة* : '+g('exitCompany')+'\u202C','',line('👤','الاسم',g('exitName'),true),line('🪪','رقم الهوية',iso(g('exitId')),true),'',line('📅','تاريخ الخروج',iso(g('exitDate')),true),line('🕐','وقت الخروج',iso(g('exitTime')),true),line('📍','موقع الخروج',g('exitLocation'),true),line('📝','نوع الحمولة',g('exitCargo'),true),'',line('🚘','رقم لوحة السيارة',g('exitPlate'),true),'','','\u202B________________________\u202C','','\u202B✅ *الاعتماد*\u202C','',line('👨‍💼','المسؤول المعتمد',g('exitApprover')),line('🏢','المسمى الوظيفي',g('exitJobTitle'))];return out.join('\n')}
+function updateExit(){const raw=exitMessage();const safe=raw.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));document.getElementById('exitPreview').innerHTML=safe.replace(/\*([^*\n]+)\*/g,'<strong>$1</strong>')}
+function persistExit(){const x={};exitIds.forEach(id=>x[id]=document.getElementById(id).value);localStorage.setItem(EXIT_KEY,JSON.stringify(x))}
+function loadExitPersist(){try{const x=JSON.parse(localStorage.getItem(EXIT_KEY)||'{}');exitIds.forEach(id=>{if(x[id]!==undefined)document.getElementById(id).value=x[id]})}catch(e){}}
+async function copyExitMessage(){const msg=exitMessage();let ok=false;try{await navigator.clipboard.writeText(msg);ok=true}catch(e){const t=document.createElement('textarea');t.value=msg;t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.select();ok=document.execCommand('copy');t.remove()}if(ok){persistExit();document.getElementById('exitSuccess').style.display='block';setTimeout(()=>document.getElementById('exitSuccess').style.display='none',2200)}else alert('تعذر النسخ. اسمح للمتصفح بالوصول إلى الحافظة ثم حاول مرة أخرى.')}
+loadPersist();if(!document.querySelector('.visitor')){addVisitor();addVisitor()}update();loadExitPersist();updateExit();openDB().catch(()=>{});
+exitIds.forEach(id=>document.getElementById(id).addEventListener('input',function(){if(['exitId','exitDate','exitTime','exitPlate'].includes(id))this.value=enDigits(this.value);persistExit();updateExit()}));
 if('serviceWorker' in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body></html>
