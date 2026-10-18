@@ -30,7 +30,13 @@
 <section id="create" class="panel active"><div class="grid">
 <div class="card">
 <h2>بيانات الزيارة</h2>
-<div class="fixed"><b>البيانات الثابتة:</b><br>🏢 الشركة: أوتاد الفهد<br>📍 موقع الزيارة: بوليفارد - أوزبكستان<br>📝 سبب الزيارة: زيارة عمل<br>👨‍💼 المسؤول المعتمد: طارق دمرية<br>🏢 المسمى الوظيفي: مدير إدارة المرافق</div>
+<div class="fixed"><b>بيانات الرسالة الثابتة — تُحفظ تلقائيًا ولا تتغير إلا بتعديلك:</b></div>
+<div class="field"><label>🏢 اسم الشركة</label><input id="company" value="أوتاد الفهد" placeholder="اسم الشركة"></div>
+<div class="field"><label>📍 موقع الزيارة</label><input id="location" value="بوليفارد - أوزبكستان" placeholder="موقع الزيارة"></div>
+<div class="field"><label>📝 سبب الزيارة</label><input id="reason" value="زيارة عمل" placeholder="سبب الزيارة"></div>
+<div class="field"><label>👨‍💼 المسؤول المعتمد</label><input id="approver" value="طارق دمرية" placeholder="اسم المسؤول المعتمد"></div>
+<div class="field"><label>🏢 المسمى الوظيفي</label><input id="jobTitle" value="مدير إدارة المرافق" placeholder="المسمى الوظيفي"></div>
+<div class="fixed">تُحفظ جميع الحقول تلقائيًا على هذا الجهاز. يمكنك تغيير أي نص ثابت يدويًا، وسيبقى كما أدخلته في الرسائل التالية.</div>
 <div id="visitors"></div><button class="btn add" onclick="addVisitor()">＋ إضافة زائر</button>
 <div class="field"><label>📅 تاريخ الزيارة</label><input id="date" inputmode="numeric" placeholder="مثال: 06/10/2026"></div>
 <div class="field"><label>🕐 وقت الزيارة</label><input id="time" inputmode="numeric" placeholder="مثال: 10:30"></div>
@@ -75,7 +81,7 @@ function line(e,label,value,boldLabel=false){
 function message(){
  const out=[];
  out.push('\u202B📋 *نموذج بيانات الزيارة*\u202C');
- out.push('\u202B🏢 *الشركة* : أوتاد الفهد\u202C');
+ out.push('\u202B🏢 *الشركة* : '+ar(company.value)+'\u202C');
  out.push('');
  const vs=[...document.querySelectorAll('.visitor')];
  vs.forEach((v,i)=>{
@@ -86,16 +92,16 @@ function message(){
  out.push('');
  out.push(line('📅','تاريخ الزيارة',iso(document.getElementById('date').value),true));
  out.push(line('🕐','وقت الزيارة',iso(document.getElementById('time').value),true));
- out.push(line('📍','موقع الزيارة','بوليفارد - أوزبكستان',true));
- out.push(line('📝','سبب الزيارة','زيارة عمل',true));
+ out.push(line('📍','موقع الزيارة',ar(location.value),true));
+ out.push(line('📝','سبب الزيارة',ar(reason.value),true));
  out.push('');
  out.push(line('🚘','رقم لوحة السيارة',iso(document.getElementById('plate').value),true));
  const n=document.getElementById('notes').value.trim();
  if(n) out.push('\u202B'+n+'\u202C');
  out.push('','','\u202B________________________\u202C','',
   '\u202B✅ *الاعتماد*\u202C','',
-  line('👨‍💼','المسؤول المعتمد','طارق دمرية'),
-  line('🏢','المسمى الوظيفي','مدير إدارة المرافق'));
+  line('👨‍💼','المسؤول المعتمد',ar(approver.value)),
+  line('🏢','المسمى الوظيفي',ar(jobTitle.value)));
  return out.join('\n');
 }
 function update(){
@@ -119,10 +125,12 @@ function closeModal(){modalBg.style.display='none'}
 function csv(v){return '"'+String(v??'').replace(/"/g,'""')+'"'}
 function exportCSV(){let rs=filtered(),a=[['رقم السجل','تاريخ/وقت التسجيل','تاريخ الزيارة','وقت الزيارة','الزوار','الهويات','اللوحة','الملاحظات'].map(csv).join(',')];rs.forEach(r=>a.push([r.id,copied(r.copiedAt),r.visitDate,r.visitTime,r.visitors.map(x=>x.name).join(' | '),r.visitors.map(x=>x.id).join(' | '),r.plate,r.notes].map(csv).join(',')));let u=URL.createObjectURL(new Blob(['\uFEFF'+a.join('\r\n')],{type:'text/csv;charset=utf-8'}));let a1=document.createElement('a');a1.href=u;a1.download='تقرير_رسائل_الزيارة.csv';a1.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
 function printReport(){let rs=filtered(),w=open('','_blank');if(!w){alert('اسمح بالنوافذ المنبثقة للطباعة.');return}w.document.write('<html lang="ar" dir="rtl"><meta charset="utf-8"><title>تقرير رسائل الزيارة</title><style>body{font-family:Tahoma,Arial;padding:20px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:7px;text-align:right;vertical-align:top}th{background:#eee}</style><h1>تقرير رسائل الزيارة</h1><p>إجمالي السجلات: '+rs.length+'</p><table><tr><th>#</th><th>التسجيل</th><th>الزيارة</th><th>الوقت</th><th>الزوار والهويات</th><th>اللوحة</th><th>الملاحظات</th></tr>'+rs.map((r,i)=>'<tr><td>'+i+'</td><td>'+esc(copied(r.copiedAt))+'</td><td>'+esc(r.visitDate)+'</td><td>'+esc(r.visitTime)+'</td><td>'+r.visitors.map(x=>esc(x.number+'. '+x.name)+' ('+esc(x.id)+')').join('<br>')+'</td><td>'+esc(r.plate)+'</td><td>'+esc(r.notes)+'</td></tr>').join('')+'</table><script>print()<\\/script></html>');w.document.close()}
-function persist(){localStorage.setItem(KEY,JSON.stringify({date:date.value,time:time.value,plate:plate.value,notes:notes.value}))}
-function loadPersist(){try{let x=JSON.parse(localStorage.getItem(KEY)||'{}');if(x.date!==undefined)date.value=x.date;if(x.time!==undefined)time.value=x.time;if(x.plate!==undefined)plate.value=x.plate;if(x.notes!==undefined)notes.value=x.notes}catch(e){}}
-['date','time','plate','notes'].forEach(id=>document.getElementById(id).oninput=function(){if(id!=='notes')digits(this);persist();update()});
-addVisitor();addVisitor();loadPersist();update();openDB().catch(()=>{});
+function addVisitor(data={}){const n=document.querySelectorAll('.visitor').length+1;const d=document.createElement('div');d.className='visitor';d.innerHTML='<div class="visitor-title">الزائر '+n+'</div><button type="button" class="remove" onclick="this.parentElement.remove();renumberVisitors();persist();update()">حذف</button><div class="field"><label>👤 اسم الزائر</label><input class="vname" placeholder="اسم الزائر" autocomplete="off"></div><div class="field"><label>🪪 رقم الهوية</label><input class="vid" inputmode="numeric" placeholder="رقم الهوية"></div>';d.querySelector('.vname').value=data.name||'';d.querySelector('.vid').value=data.id||'';d.querySelectorAll('input').forEach(el=>el.addEventListener('input',()=>{if(el.classList.contains('vid'))digits(el);persist();update()}));document.getElementById('visitors').appendChild(d);renumberVisitors();persist();update()}
+function renumberVisitors(){document.querySelectorAll('.visitor').forEach((v,i)=>v.querySelector('.visitor-title').textContent='الزائر '+(i+1))}
+function persist(){const visitors=[...document.querySelectorAll('.visitor')].map(v=>({name:v.querySelector('.vname').value,id:v.querySelector('.vid').value}));localStorage.setItem(KEY,JSON.stringify({company:company.value,location:location.value,reason:reason.value,approver:approver.value,jobTitle:jobTitle.value,date:date.value,time:time.value,plate:plate.value,notes:notes.value,visitors}))}
+function loadPersist(){try{let x=JSON.parse(localStorage.getItem(KEY)||'{}');['company','location','reason','approver','jobTitle','date','time','plate','notes'].forEach(id=>{if(x[id]!==undefined)document.getElementById(id).value=x[id]});if(Array.isArray(x.visitors)&&x.visitors.length){document.getElementById('visitors').innerHTML='';x.visitors.forEach(v=>addVisitor(v))}}catch(e){}}
+['company','location','reason','approver','jobTitle','date','time','plate','notes'].forEach(id=>document.getElementById(id).addEventListener('input',function(){if(['date','time','plate'].includes(id))digits(this);persist();update()}));
+loadPersist();if(!document.querySelector('.visitor')){addVisitor();addVisitor()}update();openDB().catch(()=>{});
 if('serviceWorker' in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body></html>
