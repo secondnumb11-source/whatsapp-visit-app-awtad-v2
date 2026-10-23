@@ -236,6 +236,8 @@ function syncPickerFromText(textId,pickerId,kind){
 }
 syncPickerFromText('visitDate','visitDatePicker','date');
 syncPickerFromText('visitTime','visitTimePicker','time');
+$('visitDate').dispatchEvent(new Event('input',{bubbles:true}));
+$('visitTime').dispatchEvent(new Event('input',{bubbles:true}));
 exitFieldIds.forEach(id=>$(id).addEventListener('input',()=>{refreshExit();saveState()}));
 $('copyVisit').addEventListener('click',()=>{saveState();copyText(visitMessage(),'visit')});
 $('copyExit').addEventListener('click',()=>{saveState();copyText(exitMessage(),'exit')});
