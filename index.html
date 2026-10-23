@@ -38,8 +38,8 @@
 <h2>بيانات الزائرين</h2>
 <div id="visitors"></div>
 <button class="btn secondary" id="addVisitor" type="button">＋ إضافة زائر</button>
-<div class="field"><label for="visitDate">📅 تاريخ الزيارة</label><input id="visitDate" type="date"></div>
-<div class="field"><label for="visitTime">🕐 وقت الزيارة</label><input id="visitTime" type="time"></div>
+<div class="field"><label for="visitDate">📅 تاريخ الزيارة</label><input id="visitDate" type="text" inputmode="numeric" placeholder="اكتب التاريخ يدويًا: 2026-10-23 أو 23/10/2026"><div class="hint">يمكنك الكتابة يدويًا أو اختيار التاريخ من التقويم:</div><input id="visitDatePicker" type="date" aria-label="اختيار تاريخ الزيارة من التقويم" style="margin-top:7px"></div>
+<div class="field"><label for="visitTime">🕐 وقت الزيارة</label><input id="visitTime" type="text" inputmode="numeric" placeholder="اكتب الوقت يدويًا: 14:30 أو 02:30 PM"><div class="hint">يمكنك الكتابة يدويًا أو اختيار الوقت من أداة الوقت:</div><input id="visitTimePicker" type="time" aria-label="اختيار وقت الزيارة" style="margin-top:7px"></div>
 <div class="field"><label for="visitPlate">🚘 رقم لوحة السيارة</label><input id="visitPlate" type="text" placeholder="رقم اللوحة"></div>
 <div class="field"><label for="visitNotes">📝 ملاحظات</label><textarea id="visitNotes" placeholder="ملاحظات إضافية (اختياري)"></textarea></div>
 <div class="actions"><button class="btn primary" id="copyVisit" type="button">📋 نسخ رسالة الزيارة</button><button class="btn secondary" id="printVisit" type="button">طباعة</button></div>
@@ -137,8 +137,8 @@ function visitMessage(){
   const people=[...document.querySelectorAll('.visitor')].map((node,i)=>{
     const name=node.querySelector('[data-person="name"]').value.trim()||'__________';
     const identity=node.querySelector('[data-person="id"]').value.trim()||'__________';
-    return '👤 اسم الزائر '+(i+1)+' : '+name+'\n🪪 رقم الهوية '+(i+1)+' : '+identity;
-  }).join('\n\n');
+    return '👤 اسم الزائر '+(i+1)+' : '+name+'\\n🪪 رقم الهوية '+(i+1)+' : '+identity;
+  }).join('\\n\\n');
   const place=read('visitPlaceText')||'__________';
   return [
     '📋 *نموذج بيانات الزيارة*',
@@ -150,14 +150,17 @@ function visitMessage(){
     '🕐 وقت الزيارة : '+val('visitTime'),
     '📍 موقع الزيارة : '+place,
     '📝 سبب الزيارة : '+val('reason'),
+    '',
     '🚘 رقم لوحة السيارة : '+val('visitPlate'),
     read('visitNotes')?'📝 ملاحظات : '+read('visitNotes'):'',
+    '',
+    '',
     '',
     '________________________',
     '✅ الاعتماد',
     '👨‍💼 المسؤول المعتمد : '+val('approver'),
     '🏢 المسمى الوظيفي : '+val('jobTitle')
-  ].filter((line,i)=>line!==''||i===2).join('\n');
+  ].join('\\n');
 }
 function exitMessage(){
   return [
@@ -215,6 +218,24 @@ document.querySelectorAll('[data-tab]').forEach(button=>button.addEventListener(
 }));
 $('addVisitor').addEventListener('click',()=>{state.visitors.push({name:'',id:''});renderVisitors();refreshVisit();saveState()});
 visitFieldIds.forEach(id=>$(id).addEventListener('input',()=>{refreshVisit();saveState()}));
+function syncPickerFromText(textId,pickerId,kind){
+  const text=$(textId),picker=$(pickerId);
+  text.addEventListener('input',()=>{
+    const raw=text.value.trim();
+    if(kind==='date'){
+      let iso='';
+      if(/^\\d{4}-\\d{2}-\\d{2}$/.test(raw))iso=raw;
+      else {const m=raw.match(/^(\\d{1,2})[\\/.-](\\d{1,2})[\\/.-](\\d{4})$/);if(m)iso=m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0')}
+      picker.value=iso;
+    }else{
+      const m=raw.match(/^(\\d{1,2}):(\\d{2})$/);
+      picker.value=m&&+m[1]<24&&+m[2]<60?m[1].padStart(2,'0')+':'+m[2]:'';
+    }
+  });
+  picker.addEventListener('input',()=>{if(picker.value){text.value=picker.value;text.dispatchEvent(new Event('input',{bubbles:true}))}});
+}
+syncPickerFromText('visitDate','visitDatePicker','date');
+syncPickerFromText('visitTime','visitTimePicker','time');
 exitFieldIds.forEach(id=>$(id).addEventListener('input',()=>{refreshExit();saveState()}));
 $('copyVisit').addEventListener('click',()=>{saveState();copyText(visitMessage(),'visit')});
 $('copyExit').addEventListener('click',()=>{saveState();copyText(exitMessage(),'exit')});
