@@ -103,9 +103,9 @@ function saveState(){
 function restoreState(){
   const saved=safeLoad(STORE_KEY,{});
   const old=safeLoad('visit_form_persistent_v1',{});
-  visitFieldIds.forEach(id=>{const v=saved.visit?.[id];if(v!==undefined&&v!==null&&v!=='')$(id).value=v});
+  visitFieldIds.forEach(id=>{const v=saved.visit?.[id];if(v!==undefined&&v!==null)$(id).value=v});
   // Migrate the former visit-site text value once, without using geolocation.
-  if(!saved.visit?.visitPlaceText){
+  if(saved.visit?.visitPlaceText===undefined||saved.visit?.visitPlaceText===null){
     const oldText=old.visitPlaceText??old.visitSiteField2026??old.location;
     if(typeof oldText==='string'&&oldText) $('visitPlaceText').value=oldText;
   }
