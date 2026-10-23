@@ -110,7 +110,7 @@ function message(){
  out.push('');
  out.push(line('📅','تاريخ الزيارة',iso(document.getElementById('date').value),true));
  out.push(line('🕐','وقت الزيارة',iso(document.getElementById('time').value),true));
- out.push(line('📍','موقع الزيارة',ar(location.value),true));
+ out.push(line('📍','موقع الزيارة',ar(document.getElementById('location').value),true));
  out.push(line('📝','سبب الزيارة',ar(reason.value),true));
  out.push('');
  out.push(line('🚘','رقم لوحة السيارة',iso(document.getElementById('plate').value),true));
