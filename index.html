@@ -32,7 +32,7 @@
 <h2>بيانات الزيارة</h2>
 <div class="fixed"><b>بيانات الرسالة الثابتة — تُحفظ تلقائيًا ولا تتغير إلا بتعديلك:</b></div>
 <div class="field"><label>🏢 اسم الشركة</label><input id="company" value="أوتاد الفهد" placeholder="اسم الشركة"></div>
-<div class="field"><label for="visitSiteField2026">📍 موقع الزيارة</label><input type="text" id="visitSiteField2026" name="visit_site" value="بوليفارد - أوزبكستان" placeholder="موقع الزيارة" autocomplete="off" oninput="visitSiteChanged(this.value)" onchange="visitSiteChanged(this.value)"></div>
+<div class="field"><label for="visitPlaceText">📍 موقع الزيارة (نص)</label><input type="text" id="visitPlaceText" name="visit_place_text" value="بوليفارد - أوزبكستان" placeholder="اكتب موقع الزيارة كنص" autocomplete="off"></div>
 <div class="field"><label>📝 سبب الزيارة</label><input id="reason" value="زيارة عمل" placeholder="سبب الزيارة"></div>
 <div class="field"><label>👨‍💼 المسؤول المعتمد</label><input id="approver" value="طارق دمرية" placeholder="اسم المسؤول المعتمد"></div>
 <div class="field"><label>🏢 المسمى الوظيفي</label><input id="jobTitle" value="مدير إدارة المرافق" placeholder="المسمى الوظيفي"></div>
@@ -110,9 +110,8 @@ function message(){
  out.push('');
  out.push(line('📅','تاريخ الزيارة',iso(document.getElementById('date').value),true));
  out.push(line('🕐','وقت الزيارة',iso(document.getElementById('time').value),true));
- const visitSiteInput=document.getElementById('visitSiteField2026');
- const visitSiteValue=visitSiteInput ? visitSiteInput.value : '';
- out.push('\u202B📍 *موقع الزيارة* : '+ar(visitSiteValue)+'\u202C');
+ const visitPlaceText=document.getElementById('visitPlaceText')?.value || '';
+ out.push('\u202B📍 *موقع الزيارة* : '+ar(visitPlaceText)+'\u202C');
  out.push(line('📝','سبب الزيارة',ar(document.getElementById('reason').value),true));
  out.push('');
  out.push(line('🚘','رقم لوحة السيارة',iso(document.getElementById('plate').value),true));
@@ -123,12 +122,6 @@ function message(){
   line('👨‍💼','المسؤول المعتمد',ar(document.getElementById('approver').value)),
   line('🏢','المسمى الوظيفي',ar(document.getElementById('jobTitle').value)));
  return out.join('\n');
-}
-function visitSiteChanged(value){
- const field=document.getElementById('visitSiteField2026');
- if(field && field.value!==value) field.value=value;
- persist();
- update();
 }
 function update(){
  const raw=message();
@@ -153,9 +146,9 @@ function exportCSV(){let rs=filtered(),a=[['رقم السجل','تاريخ/وق�
 function printReport(){let rs=filtered(),w=open('','_blank');if(!w){alert('اسمح بالنوافذ المنبثقة للطباعة.');return}w.document.write('<html lang="ar" dir="rtl"><meta charset="utf-8"><title>تقرير رسائل الزيارة</title><style>body{font-family:Tahoma,Arial;padding:20px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:7px;text-align:right;vertical-align:top}th{background:#eee}</style><h1>تقرير رسائل الزيارة</h1><p>إجمالي السجلات: '+rs.length+'</p><table><tr><th>#</th><th>التسجيل</th><th>الزيارة</th><th>الوقت</th><th>الزوار والهويات</th><th>اللوحة</th><th>الملاحظات</th></tr>'+rs.map((r,i)=>'<tr><td>'+i+'</td><td>'+esc(copied(r.copiedAt))+'</td><td>'+esc(r.visitDate)+'</td><td>'+esc(r.visitTime)+'</td><td>'+r.visitors.map(x=>esc(x.number+'. '+x.name)+' ('+esc(x.id)+')').join('<br>')+'</td><td>'+esc(r.plate)+'</td><td>'+esc(r.notes)+'</td></tr>').join('')+'</table><script>print()<\\/script></html>');w.document.close()}
 function addVisitor(data={}){const n=document.querySelectorAll('.visitor').length+1;const d=document.createElement('div');d.className='visitor';d.innerHTML='<div class="visitor-title">الزائر '+n+'</div><button type="button" class="remove" onclick="this.parentElement.remove();renumberVisitors();persist();update()">حذف</button><div class="field"><label>👤 اسم الزائر</label><input class="vname" placeholder="اسم الزائر" autocomplete="off"></div><div class="field"><label>🪪 رقم الهوية</label><input class="vid" inputmode="numeric" placeholder="رقم الهوية"></div>';d.querySelector('.vname').value=data.name||'';d.querySelector('.vid').value=data.id||'';d.querySelectorAll('input').forEach(el=>el.addEventListener('input',()=>{if(el.classList.contains('vid'))digits(el);persist();update()}));document.getElementById('visitors').appendChild(d);renumberVisitors();persist();update()}
 function renumberVisitors(){document.querySelectorAll('.visitor').forEach((v,i)=>v.querySelector('.visitor-title').textContent='الزائر '+(i+1))}
-function persist(){const visitors=[...document.querySelectorAll('.visitor')].map(v=>({name:v.querySelector('.vname').value,id:v.querySelector('.vid').value}));localStorage.setItem(KEY,JSON.stringify({company:document.getElementById('company').value,location:document.getElementById('visitSiteField2026').value,reason:document.getElementById('reason').value,approver:document.getElementById('approver').value,jobTitle:document.getElementById('jobTitle').value,date:document.getElementById('date').value,time:document.getElementById('time').value,plate:document.getElementById('plate').value,notes:document.getElementById('notes').value,visitors}))}
-function loadPersist(){try{let x=JSON.parse(localStorage.getItem(KEY)||'{}');['company','visitSiteField2026','reason','approver','jobTitle','date','time','plate','notes'].forEach(id=>{if(x[id]!==undefined)document.getElementById(id).value=x[id];else if(id==='visitSiteField2026'&&x.location!==undefined)document.getElementById(id).value=x.location});if(Array.isArray(x.visitors)&&x.visitors.length){document.getElementById('visitors').innerHTML='';x.visitors.forEach(v=>addVisitor(v))}}catch(e){}}
-['company','visitSiteField2026','reason','approver','jobTitle','date','time','plate','notes'].forEach(id=>document.getElementById(id).addEventListener('input',function(){if(['date','time','plate'].includes(id))digits(this);persist();update()}));
+function persist(){const visitors=[...document.querySelectorAll('.visitor')].map(v=>({name:v.querySelector('.vname').value,id:v.querySelector('.vid').value}));localStorage.setItem(KEY,JSON.stringify({company:document.getElementById('company').value,visitPlaceText:document.getElementById('visitPlaceText').value,reason:document.getElementById('reason').value,approver:document.getElementById('approver').value,jobTitle:document.getElementById('jobTitle').value,date:document.getElementById('date').value,time:document.getElementById('time').value,plate:document.getElementById('plate').value,notes:document.getElementById('notes').value,visitors}))}
+function loadPersist(){try{let x=JSON.parse(localStorage.getItem(KEY)||'{}');['company','visitPlaceText','reason','approver','jobTitle','date','time','plate','notes'].forEach(id=>{if(id==='visitPlaceText'){const saved=x.visitPlaceText??x.location??x.visitSiteField2026;if(saved!==undefined)document.getElementById(id).value=saved;}else if(x[id]!==undefined)document.getElementById(id).value=x[id]});if(Array.isArray(x.visitors)&&x.visitors.length){document.getElementById('visitors').innerHTML='';x.visitors.forEach(v=>addVisitor(v))}}catch(e){}}
+['company','visitPlaceText','reason','approver','jobTitle','date','time','plate','notes'].forEach(id=>document.getElementById(id).addEventListener('input',function(){if(['date','time','plate'].includes(id))digits(this);persist();update()}));
 const EXIT_KEY='visit_exit_form_persistent_v1';
 const exitIds=['exitCompany','exitName','exitId','exitDate','exitTime','exitLocation','exitCargo','exitPlate','exitApprover','exitJobTitle'];
 function exitMessage(){const g=id=>ar(document.getElementById(id).value);const out=['\u202B📋 *نموذج بيانات تصريح خروج من احد المواقع في البوليفارد*\u202C','', '\u202B🏢 *الشركة* : '+g('exitCompany')+'\u202C','',line('👤','الاسم',g('exitName'),true),line('🪪','رقم الهوية',iso(g('exitId')),true),'',line('📅','تاريخ الخروج',iso(g('exitDate')),true),line('🕐','وقت الخروج',iso(g('exitTime')),true),line('📍','موقع الخروج',g('exitLocation'),true),line('📝','نوع الحمولة',g('exitCargo'),true),'',line('🚘','رقم لوحة السيارة',g('exitPlate'),true),'','','\u202B________________________\u202C','','\u202B✅ *الاعتماد*\u202C','',line('👨‍💼','المسؤول المعتمد',g('exitApprover')),line('🏢','المسمى الوظيفي',g('exitJobTitle'))];return out.join('\n')}
