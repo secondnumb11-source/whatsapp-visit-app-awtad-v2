@@ -32,7 +32,7 @@
 <h2>بيانات الزيارة</h2>
 <div class="fixed"><b>بيانات الرسالة الثابتة — تُحفظ تلقائيًا ولا تتغير إلا بتعديلك:</b></div>
 <div class="field"><label>🏢 اسم الشركة</label><input id="company" value="أوتاد الفهد" placeholder="اسم الشركة"></div>
-<div class="field"><label>📍 موقع الزيارة</label><input id="visitSiteField2026" value="بوليفارد - أوزبكستان" placeholder="موقع الزيارة"></div>
+<div class="field"><label>📍 موقع الزيارة</label><input id="visitSiteField2026" name="visit_site" value="بوليفارد - أوزبكستان" placeholder="موقع الزيارة" oninput="persist();update()"></div>
 <div class="field"><label>📝 سبب الزيارة</label><input id="reason" value="زيارة عمل" placeholder="سبب الزيارة"></div>
 <div class="field"><label>👨‍💼 المسؤول المعتمد</label><input id="approver" value="طارق دمرية" placeholder="اسم المسؤول المعتمد"></div>
 <div class="field"><label>🏢 المسمى الوظيفي</label><input id="jobTitle" value="مدير إدارة المرافق" placeholder="المسمى الوظيفي"></div>
@@ -110,7 +110,8 @@ function message(){
  out.push('');
  out.push(line('📅','تاريخ الزيارة',iso(document.getElementById('date').value),true));
  out.push(line('🕐','وقت الزيارة',iso(document.getElementById('time').value),true));
- out.push(line('📍','موقع الزيارة',ar(document.getElementById('visitSiteField2026').value),true));
+ const visitSiteValue=document.querySelector('input[name="visit_site"]')?.value ?? document.getElementById('visitSiteField2026').value;
+  out.push(line('📍','موقع الزيارة',ar(visitSiteValue),true));
  out.push(line('📝','سبب الزيارة',ar(document.getElementById('reason').value),true));
  out.push('');
  out.push(line('🚘','رقم لوحة السيارة',iso(document.getElementById('plate').value),true));
