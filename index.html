@@ -137,8 +137,8 @@ function visitMessage(){
   const people=[...document.querySelectorAll('.visitor')].map((node,i)=>{
     const name=node.querySelector('[data-person="name"]').value.trim()||'__________';
     const identity=node.querySelector('[data-person="id"]').value.trim()||'__________';
-    return '👤 اسم الزائر '+(i+1)+' : '+name+'\\n🪪 رقم الهوية '+(i+1)+' : '+identity;
-  }).join('\\n\\n');
+    return '👤 اسم الزائر '+(i+1)+' : '+name+'\n🪪 رقم الهوية '+(i+1)+' : '+identity;
+  }).join('\n\n');
   const place=read('visitPlaceText')||'__________';
   return [
     '📋 *نموذج بيانات الزيارة*',
@@ -160,7 +160,7 @@ function visitMessage(){
     '✅ الاعتماد',
     '👨‍💼 المسؤول المعتمد : '+val('approver'),
     '🏢 المسمى الوظيفي : '+val('jobTitle')
-  ].join('\\n');
+  ].join('\n');
 }
 function exitMessage(){
   return [
