@@ -36,6 +36,10 @@
 <div class="field"><label for="jobTitle">🏢 المسمى الوظيفي</label><input id="jobTitle" type="text" value="مدير إدارة المرافق"></div>
 <hr style="border:0;border-top:1px solid #e5ece9;margin:18px 0">
 <h2>بيانات الزائرين</h2>
+<div class="section-note" style="margin:12px 0">📷 ارفع صورة إقامة واحدة أو عدة صور. سيحاول النظام قراءة الاسم ورقم الإقامة فقط، ثم يضيف كل شخص كزائر قابل للتعديل قبل نسخ الرسالة.</div>
+<div class="field"><label for="iqamaImages">📷 صور الإقامات (يمكن اختيار أكثر من صورة)</label><input id="iqamaImages" type="file" accept="image/*" multiple><div class="hint">تتم معالجة الصور داخل متصفحك. يلزم اتصال بالإنترنت لتحميل محرك OCR أول مرة.</div></div>
+<div class="actions"><button class="btn secondary" id="runIqamaOcr" type="button">استخراج الأسماء وأرقام الإقامة</button></div>
+<div class="section-note" id="ocrStatus" role="status" aria-live="polite" style="display:none;margin:10px 0"></div>
 <div id="visitors"></div>
 <button class="btn secondary" id="addVisitor" type="button">＋ إضافة زائر</button>
 <div class="field"><label for="visitDate">📅 تاريخ الزيارة</label><input id="visitDate" type="text" inputmode="numeric" placeholder="اكتب التاريخ يدويًا: 2026-10-23 أو 23/10/2026"><div class="hint">يمكنك الكتابة يدويًا أو اختيار التاريخ من التقويم:</div><input id="visitDatePicker" type="date" aria-label="اختيار تاريخ الزيارة من التقويم" style="margin-top:7px"></div>
@@ -217,6 +221,64 @@ document.querySelectorAll('[data-tab]').forEach(button=>button.addEventListener(
   document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===button.dataset.tab));
 }));
 $('addVisitor').addEventListener('click',()=>{state.visitors.push({name:'',id:''});renderVisitors();refreshVisit();saveState()});
+
+let ocrWorkerPromise=null;
+function loadOcrWorker(){
+  if(!ocrWorkerPromise){
+    ocrWorkerPromise=new Promise((resolve,reject)=>{
+      const start=()=>{try{if(!window.Tesseract)throw new Error('تعذر تحميل مكتبة OCR');window.Tesseract.createWorker('ara+eng',1,{logger:m=>{if(m.status==='recognizing text')setOcrStatus('جارٍ قراءة الصورة... '+Math.round((m.progress||0)*100)+'%')}}).then(resolve,reject)}catch(e){reject(e)}};
+      if(window.Tesseract){start();return}
+      const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';script.onload=start;script.onerror=()=>reject(new Error('تعذر تحميل مكتبة OCR؛ تحقق من اتصال الإنترنت'));document.head.append(script);
+    });
+  }
+  return ocrWorkerPromise;
+}
+function setOcrStatus(message){const el=$('ocrStatus');el.style.display='block';el.textContent=message}
+function parseIqamaOcr(text){
+  const lines=text.split(/\\r?\\n/).map(x=>x.replace(/[|]/g,' ').replace(/\\s+/g,' ').trim()).filter(Boolean);
+  const digitLines=lines.map(line=>({line,digits:line.replace(/[٠-٩]/g,d=>String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))).replace(/[\\s-]/g,'').match(/(?:2\\d{9}|1\\d{9})/g)||[]}));
+  let id='';
+  for(const item of digitLines){const found=item.digits.find(x=>/^2\\d{9}$/.test(x));if(found){id=found;break}}
+  if(!id){for(const item of digitLines){const found=item.digits[0];if(found){id=found;break}}}
+  let name='';
+  const nameLabel=/الاسم|اسم صاحب|name/i;
+  for(let i=0;i<lines.length;i++){
+    if(nameLabel.test(lines[i])){
+      let candidate=lines[i].replace(/.*?(?:الاسم|اسم صاحب|name)\\s*[:：-]?\\s*/i,'').trim();
+      if(candidate.length<3&&lines[i+1])candidate=lines[i+1];
+      candidate=candidate.replace(/[0-9٠-٩]/g,' ').replace(/\\s+/g,' ').trim();
+      if(candidate.length>=3&&!/الإقامة|هوية|تاريخ|انتهاء|ميلاد|الجنسية|المهنة|رقم|رقمي/.test(candidate)){name=candidate;break}
+    }
+  }
+  if(!name){
+    const candidates=lines.filter(line=>/[ء-يA-Za-z]{3}/.test(line)&&!/(الإقامة|هوية|تاريخ|انتهاء|ميلاد|الجنسية|المهنة|رقم|وزارة|المملكة|العربية|السعودية|RESIDENCE|PERMIT|IDENTITY|DATE|EXPIRY|NATIONALITY|OCCUPATION)/i.test(line)&&!/[0-9]{4}/.test(line));
+    name=candidates.sort((a,b)=>b.length-a.length)[0]||'';
+  }
+  return {name:name.slice(0,100),id};
+}
+async function runIqamaOcr(){
+  const files=[...($('iqamaImages').files||[])].filter(file=>file.type.startsWith('image/'));
+  if(!files.length){setOcrStatus('اختر صورة إقامة واحدة على الأقل أولاً.');return}
+  const button=$('runIqamaOcr');button.disabled=true;
+  try{
+    setOcrStatus('جارٍ تجهيز محرك قراءة الصور...');
+    const worker=await loadOcrWorker();let added=0;const issues=[];
+    for(let i=0;i<files.length;i++){
+      setOcrStatus('قراءة الصورة '+(i+1)+' من '+files.length+'...');
+      try{
+        const result=await worker.recognize(files[i]);
+        const data=parseIqamaOcr(result.data.text||'');
+        if(!data.name&&!data.id){issues.push('الصورة '+(i+1)+': لم يتم التعرف على بيانات واضحة.');continue}
+        state.visitors.push({name:data.name,id:data.id});added++;
+      }catch(e){issues.push('الصورة '+(i+1)+': تعذرت قراءتها.')}
+    }
+    renderVisitors();refreshVisit();saveState();
+    setOcrStatus('تمت إضافة '+added+' زائر. راجع الاسم ورقم الإقامة وعدّلهما يدويًا قبل النسخ.'+(issues.length?'\\n'+issues.join('\\n'):''));
+  }catch(error){setOcrStatus(error.message||'حدث خطأ أثناء تشغيل OCR.')}
+  finally{button.disabled=false}
+}
+
+$('runIqamaOcr').addEventListener('click',runIqamaOcr);
 visitFieldIds.forEach(id=>$(id).addEventListener('input',()=>{refreshVisit();saveState()}));
 function syncPickerFromText(textId,pickerId,kind){
   const text=$(textId),picker=$(pickerId);
